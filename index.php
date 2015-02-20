@@ -1,4 +1,6 @@
 <?php
+namespace ModHistory;
+
 /**
  * Plugin Name:	WP Modification History
  * Plugin URI:	http://robido.com/wp-mod-history
@@ -9,12 +11,11 @@
  * Text Domain:	wp-mod-history
  * License:		GPL2
  */
-namespace ModHistory;
 
 class Main {
 
 	public function __construct() {
-		register_activation_hook( __FILE__, array( 'Main', 'install' ) );
+		register_activation_hook( __FILE__, array( $this, 'install' ) );
 	}
 
 	function install() {
