@@ -145,7 +145,7 @@ class ModHistory {
 									}
 								}
 							} else {
-								$diff = array_diff_meta( $postmeta_modified['after'], $postmeta_modified['before'] );
+								$diff = $this->array_diff_meta( $postmeta_modified['after'], $postmeta_modified['before'] );
 								if ( ! empty( $diff ) ) {
 									foreach ( $diff as $key => $change ) {
 										echo '<h4 style="margin:0;padding:0 6px;background:#eee;box-shadow:0 1px 3px 0px rgba(50, 50, 50, 0.25);cursor:pointer;" class="togglenext">' . $key . '<div style="float:right;color:#aaa;clear:right;" class="dashicons dashicons-arrow-down"></div></h4>';
