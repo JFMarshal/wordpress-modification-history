@@ -14,10 +14,12 @@ namespace robido;
 
 class ModHistory {
 
-	private $wp_modification_history = false;
+	private $mods = false;
+	private $table = 'modifications';
 
 	public function __construct() {
 		register_activation_hook( __FILE__, array( $this, 'install' ) );
+		register_uninstall_hook( __FILE__, array( $this, 'uninstall' ) );
 		add_action( 'add_meta_boxes', array( $this, 'metaboxes' ) );
 		add_action( 'pre_post_update', array( $this, 'history_save' ) );
 		add_action( 'post_updated', array( $this, 'modifications_saved' ) );
@@ -29,9 +31,10 @@ class ModHistory {
 	 * Install routine
 	 */
 	function install() {
+		// Create custom modification history table
 		global $wpdb;
 		$charset_collate = $wpdb->get_charset_collate();
-		$sql = "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}modifications` (
+		$sql = "CREATE TABLE IF NOT EXISTS `{$wpdb->prefix}{$this->table}` (
 					`ID` int(11) NOT NULL AUTO_INCREMENT,
 					`post_id` int(11) NOT NULL,
 					`user_id` int(11) NOT NULL,
@@ -44,6 +47,17 @@ class ModHistory {
 				) $charset_collate;";
 		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		dbDelta( $sql );
+	}
+
+	/**
+	 * Uninstall routine
+	 */
+	function uninstall() {
+		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) exit();
+		// Delete modification history options
+		// Delete modification history table
+		global $wpdb;
+		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}{$this->table}" );
 	}
 
 	/**
@@ -61,7 +75,7 @@ class ModHistory {
 	}
 
 	/**
-	 * Add modification history metabox to post edit screen
+	 * Add modification history metabox on post edit screen(s)
 	 */
 	function metaboxes() {
 		add_meta_box( 'wp_modification_history', __( 'Modification History', 'afk-travel' ), array( $this, 'wp_modification_history' ), 'post' );
@@ -201,7 +215,7 @@ class ModHistory {
 		}
 
 		// Get current data from posts table
-		$this->wp_modification_history = array(
+		$this->mods = array(
 			'before'	=> array(
 				'posts' 	=> get_post( $post_id ),
 				'postmeta' 	=> get_post_meta( $post_id ),
@@ -209,8 +223,8 @@ class ModHistory {
 		);
 
 		// Unset values we don't want to track as changes
-		unset( $this->wp_modification_history['before']['postmeta']['_encloseme'] );
-		unset( $this->wp_modification_history['before']['postmeta']['_pingme'] );
+		unset( $this->mods['before']['postmeta']['_encloseme'] );
+		unset( $this->mods['before']['postmeta']['_pingme'] );
 
 	}
 
@@ -230,7 +244,7 @@ class ModHistory {
 		}
 
 		// Update the modification history
-		$this->wp_modification_history['after'] = array(
+		$this->mods['after'] = array(
 			'posts' 	=> get_post( $post_id )
 		);
 
@@ -255,26 +269,26 @@ class ModHistory {
 		}
 
 		// Update the modification history
-		$this->wp_modification_history['after']['posts'] = get_post( $post_id );
-		$this->wp_modification_history['after']['postmeta'] = get_post_meta( $post_id );
+		$this->mods['after']['posts'] = get_post( $post_id );
+		$this->mods['after']['postmeta'] = get_post_meta( $post_id );
 
 		// Unset values we don't want to track as changes
-		unset( $this->wp_modification_history['after']['postmeta']['_encloseme'] );
-		unset( $this->wp_modification_history['after']['postmeta']['_pingme'] );
+		unset( $this->mods['after']['postmeta']['_encloseme'] );
+		unset( $this->mods['after']['postmeta']['_pingme'] );
 
 		// Insert modifications into modification table
-		$diff_posts = array_diff_assoc( (array) $this->wp_modification_history['after']['posts'], (array) $this->wp_modification_history['before']['posts'] );
-		$diff_postmeta = array_diff_assoc( $this->wp_modification_history['after']['postmeta'], $this->wp_modification_history['before']['postmeta'] );
+		$diff_posts = array_diff_assoc( (array) $this->mods['after']['posts'], (array) $this->mods['before']['posts'] );
+		$diff_postmeta = array_diff_assoc( $this->mods['after']['postmeta'], $this->mods['before']['postmeta'] );
 		if ( ! empty( $diff_posts ) || ! empty( $diff_postmeta ) ) {
 			$wpdb->insert(
 				$wpdb->prefix . 'modifications',
 				array(
 					'post_id'			=> $post_id,
 					'user_id'			=> $current_user->ID,
-					'posts_before'		=> serialize( $this->wp_modification_history['before']['posts'] ),
-					'postmeta_before'	=> serialize( $this->wp_modification_history['before']['postmeta'] ),
-					'posts_after'		=> serialize( $this->wp_modification_history['after']['posts'] ),
-					'postmeta_after'	=> serialize( $this->wp_modification_history['after']['postmeta'] ),
+					'posts_before'		=> serialize( $this->mods['before']['posts'] ),
+					'postmeta_before'	=> serialize( $this->mods['before']['postmeta'] ),
+					'posts_after'		=> serialize( $this->mods['after']['posts'] ),
+					'postmeta_after'	=> serialize( $this->mods['after']['postmeta'] ),
 					'modified'			=> current_time( 'Y-m-d H:i:s' ),
 				),
 				array(
