@@ -53,7 +53,7 @@ class ModHistory {
 	 * Uninstall routine
 	 */
 	function uninstall() {
-		echo 'test';
+		wp_die( 'I am here' );
 		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) exit();
 		// Delete modification history options
 		// Delete modification history table
