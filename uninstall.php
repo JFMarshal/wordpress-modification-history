@@ -1,6 +1,6 @@
 <?php
 namespace robido;
-require_once( dirname( __FILE__ ) . 'mod_history.php' );
+require_once( dirname( __FILE__ ) . '/mod_history.php' );
 $ModHistory = new ModHistory;
 
 // Uninstall ModHistory
