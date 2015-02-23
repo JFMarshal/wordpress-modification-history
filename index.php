@@ -207,7 +207,10 @@ class ModHistory {
 				'postmeta' 	=> get_post_meta( $post_id ),
 			),
 		);
+
+		// Unset values we don't want to track as changes
 		unset( $this->wp_modification_history['before']['postmeta']['_encloseme'] );
+		unset( $this->wp_modification_history['before']['postmeta']['_pingme'] );
 
 	}
 
@@ -241,8 +244,6 @@ class ModHistory {
 		global $wpdb, $current_user;
 		get_currentuserinfo();
 
-		// $post_id = $wpdb->get_var( "SELECT `post_id` FROM {$wpdb->postmeta} WHERE `meta_id` = {$meta_id}" );
-
 		// Checks save status
 		$is_autosave = wp_is_post_autosave( $post_id );
 		$is_revision = wp_is_post_revision( $post_id );
@@ -256,7 +257,10 @@ class ModHistory {
 		// Update the modification history
 		$this->wp_modification_history['after']['posts'] = get_post( $post_id );
 		$this->wp_modification_history['after']['postmeta'] = get_post_meta( $post_id );
+
+		// Unset values we don't want to track as changes
 		unset( $this->wp_modification_history['after']['postmeta']['_encloseme'] );
+		unset( $this->wp_modification_history['after']['postmeta']['_pingme'] );
 
 		// Insert modifications into modification table
 		$diff_posts = array_diff_assoc( (array) $this->wp_modification_history['after']['posts'], (array) $this->wp_modification_history['before']['posts'] );
