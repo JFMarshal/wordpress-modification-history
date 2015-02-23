@@ -14,12 +14,11 @@ namespace robido;
 
 class ModHistory {
 
+	public $table = 'modifications';
 	private $mods = false;
-	private $table = 'modifications';
 
 	public function __construct() {
 		register_activation_hook( __FILE__, array( $this, 'install' ) );
-		register_uninstall_hook( __FILE__, array( $this, 'uninstall' ) );
 		add_action( 'add_meta_boxes', array( $this, 'metaboxes' ) );
 		add_action( 'pre_post_update', array( $this, 'history_save' ) );
 		add_action( 'post_updated', array( $this, 'modifications_saved' ) );
