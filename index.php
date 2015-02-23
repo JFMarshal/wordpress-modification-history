@@ -53,11 +53,13 @@ class ModHistory {
 	 * Uninstall routine
 	 */
 	function uninstall() {
+		echo 'test';
 		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) exit();
 		// Delete modification history options
 		// Delete modification history table
 		global $wpdb;
 		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}{$this->table}" );
+		wp_die( 'got here executing: ' . "DROP TABLE IF EXISTS {$wpdb->prefix}{$this->table}" );
 	}
 
 	/**
