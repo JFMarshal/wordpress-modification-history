@@ -50,19 +50,6 @@ class ModHistory {
 	}
 
 	/**
-	 * Uninstall routine
-	 */
-	function uninstall() {
-		wp_die( 'I am here' );
-		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) exit();
-		// Delete modification history options
-		// Delete modification history table
-		global $wpdb;
-		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}{$this->table}" );
-		wp_die( 'got here executing: ' . "DROP TABLE IF EXISTS {$wpdb->prefix}{$this->table}" );
-	}
-
-	/**
 	 * Diff an array of postmeta values
 	 */
 	function array_diff_meta( $array1, $array2 ) {
