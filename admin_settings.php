@@ -1,5 +1,6 @@
 <?php
 namespace robido;
+require_once( dirname( __FILE__ ) . '/mod_history.php' );
 
 class AdminSettings extends ModHistory {
 	
