@@ -12,7 +12,7 @@ namespace robido;
  * License:		GPL2
  */
 
-if ( ! is_defined( 'ABSPATH' ) ) exit;
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 class ModHistory {
 
