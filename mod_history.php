@@ -12,6 +12,8 @@ namespace robido;
  * License:		GPL2
  */
 
+if ( ! isset( 'ABSPATH' ) ) exit;
+
 class ModHistory {
 
 	public $table = 'modifications';
@@ -23,7 +25,6 @@ class ModHistory {
 		add_action( 'pre_post_update', array( $this, 'history_save' ) );
 		add_action( 'post_updated', array( $this, 'modifications_saved' ) );
 		add_action( 'wp_insert_post', array( $this, 'postmeta_modifications_saved' ), 99999 );
-		// add_action( 'updated_postmeta', 'postmeta_modifications_saved' );
 	}
 
 	/**
@@ -79,7 +80,7 @@ class ModHistory {
 		wp_nonce_field( 'modification_history', 'modification_history' );
 
 		// Get our modifications
-		$mods = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}modifications WHERE `post_id` = " . absint( $post->ID ) . " ORDER BY `modified`" );
+		$mods = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}{$this->table} WHERE `post_id` = " . absint( $post->ID ) . " ORDER BY `modified`" );
 		if ( ! empty( $mods ) ) {
 		?>
 		<table>
@@ -269,7 +270,7 @@ class ModHistory {
 		$diff_postmeta = array_diff_assoc( $this->mods['after']['postmeta'], $this->mods['before']['postmeta'] );
 		if ( ! empty( $diff_posts ) || ! empty( $diff_postmeta ) ) {
 			$wpdb->insert(
-				$wpdb->prefix . 'modifications',
+				$wpdb->prefix . $this->table,
 				array(
 					'post_id'			=> $post_id,
 					'user_id'			=> $current_user->ID,
