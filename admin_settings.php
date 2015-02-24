@@ -12,7 +12,7 @@ class AdminSettings extends ModHistory {
 	 * Add settings page(s)
 	 */
 	function add_settings_pages() {
-		add_submenu_page( 'settings', 'Modification History', 'Modification History', 'manage_options', 'mod-history', array( $this, 'settings_page' ) );		
+		add_submenu_page( 'settings.php', 'Modification History', 'Modification History', 'manage_options', 'mod-history', array( $this, 'settings_page' ) );		
 	}
 
 	/**
