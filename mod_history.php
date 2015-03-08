@@ -6,6 +6,7 @@ class ModHistory {
 
 	public $table = 'modifications';
 	private $mods = false;
+	private $options;
 
 	public function __construct() {
 		register_activation_hook( __FILE__, array( $this, 'install' ) );
@@ -13,6 +14,7 @@ class ModHistory {
 		add_action( 'pre_post_update', array( $this, 'history_save' ) );
 		add_action( 'post_updated', array( $this, 'modifications_saved' ) );
 		add_action( 'wp_insert_post', array( $this, 'postmeta_modifications_saved' ), 99999 );
+		$this->options = get_option( 'wp_mod_history_options' );
 	}
 
 	/**
@@ -55,7 +57,9 @@ class ModHistory {
 	 * Add modification history metabox on post edit screen(s)
 	 */
 	function metaboxes() {
-		add_meta_box( 'wp_modification_history', __( 'Modification History', 'afk-travel' ), array( $this, 'wp_modification_history' ), 'post' );
+		if ( $this->post_types_check() ) {
+			add_meta_box( 'wp_modification_history', __( 'Modification History', 'afk-travel' ), array( $this, 'wp_modification_history' ), 'post' );
+		}
 	}
 
 	/**
@@ -178,8 +182,13 @@ class ModHistory {
 
 	/**
 	 * Before post save hook to track modification history
+	 *
+	 * @param 	(integer) 	$post_id of the post being saved
 	 */
 	function history_save( $post_id ) {
+
+		// Check if we should track these modifications
+		if ( ! $this->post_types_check() ) return;
 
 		// Checks save status
 		$is_autosave = wp_is_post_autosave( $post_id );
@@ -207,8 +216,13 @@ class ModHistory {
 
 	/**
 	 * After post save hook to track modification history
+	 *
+	 * @param 	(integer) 	$post_id of the post being saved
 	 */
 	function modifications_saved( $post_id ) {
+
+		// Check if we should track these modifications
+		if ( ! $this->post_types_check() ) return;
 
 		// Checks save status
 		$is_autosave = wp_is_post_autosave( $post_id );
@@ -229,8 +243,13 @@ class ModHistory {
 
 	/**
 	 * After postmeta save hook to track modification history (and insert into DB when differences are found)
+	 *
+	 * @param 	(integer) 	$post_id of the post being saved
 	 */
 	function postmeta_modifications_saved( $post_id ) {
+
+		// Check if we should track these modifications
+		if ( ! $this->post_types_check() ) return;
 
 		global $wpdb, $current_user;
 		get_currentuserinfo();
@@ -280,6 +299,19 @@ class ModHistory {
 			);
 		}
 
+	}
+
+	/**
+	 * Check to see if the current post type is in the options of post types to track modification history
+	 *
+	 * @return 	(bool) 	True if current post type is trackable, False if not
+	 */
+	private function post_types_check() {
+		$screen = get_current_screen();
+		if ( is_object( $screen ) && in_array( $screen->post_type, $this->options['post_types'] ) ) {
+			return true;
+		}
+		return false;
 	}
 
 }
