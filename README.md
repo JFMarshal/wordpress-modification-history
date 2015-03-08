@@ -1,4 +1,4 @@
-# wp-mod-history
+# WP Modification History
 WordPress Modification History adds a metabox that shows modification history on a particular set of post types.
 
 ## Requires
