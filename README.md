@@ -7,4 +7,6 @@ WordPress Modification History adds a metabox that shows modification history on
 
 ## Install it
 
-Drop unzipped folder into wp-content/plugins/wp-mod-history and activate the plugin via the plugins admin page
+Drop unzipped folder into wp-content/plugins/wp-mod-history and activate the plugin via the plugins admin page.
+
+Alternatively, just install the plugin from the plugins admin page by searching for "WP Modification History"
