@@ -62,12 +62,14 @@ class ModHistory {
 	 */
 	function metaboxes() {
 		if ( $this->post_types_check() ) {
-			add_meta_box( 'wp_modification_history', __( 'Modification History', 'afk-travel' ), array( $this, 'wp_modification_history' ), 'post' );
+			add_meta_box( 'wp_modification_history', __( 'Modification History', 'wp-mod-history' ), array( $this, 'wp_modification_history' ), null );
+		} else {
+			wp_die( 'oh noes!' );
 		}
 	}
 
 	/**
-	 * Hours of operation meta box HTML
+	 * Modification history metabox HTML
 	 */
 	function wp_modification_history() {
 		global $post, $wpdb;
