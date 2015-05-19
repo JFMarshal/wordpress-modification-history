@@ -41,6 +41,10 @@ class ModHistory {
 
 	/**
 	 * Diff an array of postmeta values
+	 *
+	 * @param 	(array)	First array to diff
+	 * @param 	(array)	Second array to diff
+	 * @return 	(array)	Keys and values that have differences between First and Second array params
 	 */
 	function array_diff_meta( $array1, $array2 ) {
 		if ( ! is_array( $array1 ) || ! is_array( $array2 ) ) return false;
