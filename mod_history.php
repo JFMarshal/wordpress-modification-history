@@ -6,7 +6,9 @@ class ModHistory {
 
 	public $table = 'modifications';
 	private $mods = false;
-	private $options;
+	private $options = array();
+	private $settings = array();
+	private $post_types = array();
 
 	public function __construct() {
 		register_activation_hook( __FILE__, array( $this, 'install' ) );
@@ -15,6 +17,8 @@ class ModHistory {
 		add_action( 'post_updated', array( $this, 'modifications_saved' ) );
 		add_action( 'wp_insert_post', array( $this, 'postmeta_modifications_saved' ), 99999 );
 		$this->options = get_option( 'wp_mod_history_options' );
+		$this->settings = isset( $this->options['settings'] ) ? $this->options['settings'] : array();
+		$this->post_types = isset( $this->options['post_types'] ) ? $this->options['post_types'] : array();
 	}
 
 	/**
@@ -91,10 +95,12 @@ class ModHistory {
 			</thead>
 			<tbody>
 				<?php
+					$last_user = '';
 					$last_time = false;
 					foreach ( $mods as $mod ) {
+						// Set the user that made this modification
 						$user = get_user_by( 'id', $mod->user_id );
-						$user = $user ? $user->data->display_name : '';
+						$user = $user ? str_replace( ' ', '&nbsp;', $user->data->display_name ) : '';
 
 						// Build modifications arrays for posts table
 						$posts_modified = array(
@@ -115,50 +121,65 @@ class ModHistory {
 						// Build array of differences for each table modifications array
 						$posts_mods = array_diff_assoc( $posts_modified['after'], $posts_modified['before'] );
 						$postmeta_mods = array_diff_assoc( $postmeta_modified['after'], $postmeta_modified['before'] );
-						echo '<tr>';
-							echo '<td style="vertical-align:top;">' . str_replace( ' ', '&nbsp;', $user ) . '</td>';
-							echo '<td style="vertical-align:top;">' . date( 'n/j/y', strtotime( $mod->modified ) ) . '</td>';
-							echo '<td style="vertical-align:top;">';
-							if ( ! empty( $posts_mods ) ) {
-								foreach ( $posts_mods as $key => $postmod ) {
-									// Optionally display the time if it's different than the last diff
-									if ( date( 'g:ia', strtotime( $mod->modified ) ) != $last_time ) {
-										$last_time = date( 'g:ia', strtotime( $mod->modified ) );
-										echo $last_time . '</td><td style="vertical-align:top;width:100%;">';
-									} else {
-										// echo date( 'g:ia', strtotime( $mod->modified ) ) . ' == ' . $last_time;
+
+						if ( isset( $this->settings['unchanged'] ) && empty( $posts_mods ) && empty( $postmeta_mods ) ) {
+
+							// Updated with no modifications
+							echo '<tr>';
+								echo '<td style="vertical-align:top;">' . $user . '</td>';
+								echo '<td style="vertical-align:top;">' . date( 'n/j/y', strtotime( $mod->modified ) ) . '</td>';
+								echo '<td style="vertical-align:top;">';
+									echo '<em>Updated with no modifications</em>';
+								echo '</td>';
+							echo '</tr>';
+
+						} else if ( ! empty( $posts_mods ) || ! empty( $postmeta_mods ) ) {
+
+							// Modifications were made
+							echo '<tr>';
+								echo '<td style="vertical-align:top;">' . $user . '</td>';
+								echo '<td style="vertical-align:top;">' . date( 'n/j/y', strtotime( $mod->modified ) ) . '</td>';
+								echo '<td style="vertical-align:top;">';
+								if ( ! empty( $posts_mods ) ) {
+									foreach ( $posts_mods as $key => $postmod ) {
+										// Optionally display the time if it's different than the last diff
+										if ( date( 'g:ia', strtotime( $mod->modified ) ) != $last_time ) {
+											$last_time = date( 'g:ia', strtotime( $mod->modified ) );
+											echo $last_time . '</td><td style="vertical-align:top;width:100%;">';
+										} else {
+											echo '</td><td style="vertical-align:top;width:100%;">';
+										}
+										echo '<h4 style="margin:0;padding:0 6px;background:#eee;box-shadow:0 1px 3px 0px rgba(50, 50, 50, 0.25);cursor:pointer;position:relative;" class="togglenext">' . $key . '<div style="color:#aaa;position:absolute;right:0;" class="dashicons dashicons-arrow-down"></div></h4>';
+										echo '<div style="display:none;">' . wp_text_diff( $posts_modified['before'][ $key ], $postmod ) . '</div>';
 									}
-									echo '<h4 style="margin:0;padding:0 6px;background:#eee;box-shadow:0 1px 3px 0px rgba(50, 50, 50, 0.25);cursor:pointer;position:relative;" class="togglenext">' . $key . '<div style="color:#aaa;position:absolute;right:0;" class="dashicons dashicons-arrow-down"></div></h4>';
-									echo '<div style="display:none;">' . wp_text_diff( $posts_modified['before'][ $key ], $postmod ) . '</div>';
+								} else if ( date( 'g:ia', strtotime( $mod->modified ) ) != $last_time ) {
+									$last_time = date( 'g:ia', strtotime( $mod->modified ) );
+									echo $last_time . '</td><td style="vertical-align:top;width:100%;">';
 								}
-							} else if ( date( 'g:ia', strtotime( $mod->modified ) ) != $last_time ) {
-								$last_time = date( 'g:ia', strtotime( $mod->modified ) );
-								echo $last_time . '</td><td style="vertical-align:top;width:100%;">';
-							}
-							if ( ! empty( $postmeta_mods ) ) {
-								foreach ( $postmeta_mods as $key => $metamod ) {
-									echo '<h4 style="margin:0;padding:0 6px;background:#eee;box-shadow:0 1px 3px 0px rgba(50, 50, 50, 0.25);cursor:pointer;position:relative;" class="togglenext">' . $key . '<div style="color:#aaa;position:absolute;right:0;" class="dashicons dashicons-arrow-down"></div></h4>';
-									if ( ! isset( $post_modified['before'][ $key ] ) ) {
-										echo '<div style="display:none;">Set value to <strong>' . $metamod[0] . '</strong></div>';
-									} else {
-										$diff = wp_text_diff( $postmeta_modified['before'][ $key ], $metamod );
-										echo '<div style="display:none;">' . wp_text_diff( $postmeta_modified['before'][ $key ], $metamod ) . '</div>';
+								if ( ! empty( $postmeta_mods ) ) {
+									foreach ( $postmeta_mods as $key => $metamod ) {
+										echo '<h4 style="margin:0;padding:0 6px;background:#eee;box-shadow:0 1px 3px 0px rgba(50, 50, 50, 0.25);cursor:pointer;position:relative;" class="togglenext">' . $key . '<div style="color:#aaa;position:absolute;right:0;" class="dashicons dashicons-arrow-down"></div></h4>';
+										if ( ! isset( $post_modified['before'][ $key ] ) ) {
+											echo '<div style="display:none;">Set value to <strong>' . $metamod[0] . '</strong></div>';
+										} else {
+											$diff = wp_text_diff( $postmeta_modified['before'][ $key ], $metamod );
+											echo '<div style="display:none;">' . wp_text_diff( $postmeta_modified['before'][ $key ], $metamod ) . '</div>';
+										}
+									}
+								} else {
+									$diff = $this->array_diff_meta( $postmeta_modified['after'], $postmeta_modified['before'] );
+									if ( ! empty( $diff ) ) {
+										foreach ( $diff as $key => $change ) {
+											echo '<h4 style="margin:0;padding:0 6px;background:#eee;box-shadow:0 1px 3px 0px rgba(50, 50, 50, 0.25);cursor:pointer;" class="togglenext">' . $key . '<div style="float:right;color:#aaa;clear:right;" class="dashicons dashicons-arrow-down"></div></h4>';
+											echo '<div style="display:none;">' . wp_text_diff( $postmeta_modified['before'][$key][0], $change ) . '</div>';
+										}
 									}
 								}
-							} else {
-								$diff = $this->array_diff_meta( $postmeta_modified['after'], $postmeta_modified['before'] );
-								if ( ! empty( $diff ) ) {
-									foreach ( $diff as $key => $change ) {
-										echo '<h4 style="margin:0;padding:0 6px;background:#eee;box-shadow:0 1px 3px 0px rgba(50, 50, 50, 0.25);cursor:pointer;" class="togglenext">' . $key . '<div style="float:right;color:#aaa;clear:right;" class="dashicons dashicons-arrow-down"></div></h4>';
-										echo '<div style="display:none;">' . wp_text_diff( $postmeta_modified['before'][$key][0], $change ) . '</div>';
-									}
-								}
-							}
-							if ( empty( $posts_mods ) && empty( $postmeta_mods ) ) {
-								echo '<em>Updated with no modifications</em>';
-							}
-							echo '</td>';
-						echo '</tr>';
+								echo '</td>';
+							echo '</tr>';
+
+						}
+						$last_user = $user;
 					}
 				?>
 			</tbody>

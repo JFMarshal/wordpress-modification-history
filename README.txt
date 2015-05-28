@@ -3,7 +3,7 @@ Contributors: jphase, robido
 Donate link: http://robido.com
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl.html
-Tags: modification, history
+Tags: modification, history, data, meta, postmeta
 Requires at least: 3.2
 Tested up to: 4.2
 Stable tag: 1.0

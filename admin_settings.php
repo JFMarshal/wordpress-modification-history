@@ -6,8 +6,13 @@ class AdminSettings extends ModHistory {
 	
 	private $post_types_blacklist = array( 'attachment', 'revision', 'nav_menu_item' );
 	private $post_types_enabled = array( 'post', 'page' );
+	private $settings = array();
+	private $options = array();
 
-	function __construct() {
+	function __construct( $args ) {
+		// Run parent construct
+		parent::__construct( $args );
+
 		// Add our actions for admin settings
 		add_action( 'admin_menu', array( $this, 'add_settings_pages' ) );
 
@@ -23,23 +28,31 @@ class AdminSettings extends ModHistory {
 	}
 
 	/**
-	 * Render the settings page for our options
+	 * Render the settings page to store options
 	 */
 	function settings_page() {
 		$this->process_post();
-		echo '<h1>Modification History Settings</h1>';
-		$post_types = get_post_types();
+		echo '<h1>Modification History Settings</h1><hr>';
+		echo '<form method="post">';
 
 		// Apply wp_mods_post_types_blacklist filter to not display certain post types for tracking (return an empty array on this filter to enable these)
+		$post_types = get_post_types();
 		$post_types = array_diff( $post_types, apply_filters( 'wp_mods_post_types_blacklist', $this->post_types_blacklist ) );
 
 		// Get post types that are enabled for modification tracking
-		$options = get_option( 'wp_mod_history_options', false );
-		$this->post_types_enabled = $options ? $options['post_types'] : $this->post_types_enabled;
+		$this->options = get_option( 'wp_mod_history_options' );
+		$this->post_types_enabled = $this->options ? $this->options['post_types'] : $this->post_types_enabled;
+		$this->settings = $this->options ? $this->options['settings'] : $this->settings;
 
-		echo '<h4>' . __( 'Track modifications on these post types:', 'wp_mod_history' ) . '</h4>';
-		echo '<form method="post">';
-		wp_nonce_field( 'wp_mod_history_settings', 'wp_mod_history_settings' );
+		// General settings
+		echo '<h3>' . __( 'General settings:', 'wp_mod_history' ) . '</h3>';
+		echo '<ul style="padding-left:1em;">';
+			echo '<li><label><input type="checkbox" name="wp_mod_history_settings[unchanged]"' . checked( isset( $this->settings['unchanged'] ), true, false ) . ' style="margin-top:0">Show <i>Updated with no modifications</i> in modification history.</label></li>';
+		echo '</ul>';
+
+		// Post types
+		echo '<h3>' . __( 'Track modifications on these post types:', 'wp_mod_history' ) . '</h3>';
+		wp_nonce_field( 'wp_mod_history_options', 'wp_mod_history_options' );
 		if ( ! empty( $post_types ) ) {
 			echo '<ul style="padding-left:1em;">';
 			foreach ( $post_types as $post_type ) {
@@ -52,14 +65,13 @@ class AdminSettings extends ModHistory {
 	}
 
 	private function process_post() {
-		if ( ! empty( $_POST ) && isset( $_POST['wp_mod_history_settings'] ) && wp_verify_nonce( $_POST['wp_mod_history_settings'], 'wp_mod_history_settings' ) ) {
-			if ( isset( $_POST['wp_mod_history_post_types'] ) && is_array( $_POST['wp_mod_history_post_types'] ) ) {
-				// Update/add plugin options
-				$options = array();
-				$post_types = array_keys( $_POST['wp_mod_history_post_types'] );
-				$options['post_types'] = $post_types;
-				update_option( 'wp_mod_history_options', $options );
-			}
+		if ( ! empty( $_POST ) && isset( $_POST['wp_mod_history_options'] ) && wp_verify_nonce( $_POST['wp_mod_history_options'], 'wp_mod_history_options' ) ) {
+			// Update/add plugin options
+			$options = array(
+				'post_types'	=> array_keys( $_POST['wp_mod_history_post_types'] ),
+				'settings'		=> $_POST['wp_mod_history_settings'],
+			);
+			update_option( 'wp_mod_history_options', $options );
 		}
 	}
 
