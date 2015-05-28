@@ -127,7 +127,7 @@ class ModHistory {
 							// Updated with no modifications
 							echo '<tr>';
 								echo '<td style="vertical-align:top;">' . $user . '</td>';
-								echo '<td style="vertical-align:top;">' . date( 'n/j/y', strtotime( $mod->modified ) ) . '</td>';
+								echo '<td style="vertical-align:top;">' . date( $this->settings['date_format'], strtotime( $mod->modified ) ) . '</td>';
 								echo '<td style="vertical-align:top;">';
 									echo '<em>Updated with no modifications</em>';
 								echo '</td>';
@@ -138,13 +138,13 @@ class ModHistory {
 							// Modifications were made
 							echo '<tr>';
 								echo '<td style="vertical-align:top;">' . $user . '</td>';
-								echo '<td style="vertical-align:top;">' . date( 'n/j/y', strtotime( $mod->modified ) ) . '</td>';
+								echo '<td style="vertical-align:top;">' . date( $this->settings['date_format'], strtotime( $mod->modified ) ) . '</td>';
 								echo '<td style="vertical-align:top;">';
 								if ( ! empty( $posts_mods ) ) {
 
 									// Optionally display the time if it's different than the last diff
-									if ( date( 'g:ia', strtotime( $mod->modified ) ) != $last_time ) {
-										$last_time = date( 'g:ia', strtotime( $mod->modified ) );
+									if ( date( $this->settings['time_format'], strtotime( $mod->modified ) ) != $last_time ) {
+										$last_time = date( $this->settings['time_format'], strtotime( $mod->modified ) );
 										echo $last_time;
 									}
 									echo '</td><td style="vertical-align:top;width:100%;">';
@@ -155,8 +155,8 @@ class ModHistory {
 										echo '<div style="display:none;">' . wp_text_diff( $posts_modified['before'][ $key ], $postmod ) . '</div>';
 									}
 
-								} else if ( date( 'g:ia', strtotime( $mod->modified ) ) != $last_time ) {
-									$last_time = date( 'g:ia', strtotime( $mod->modified ) );
+								} else if ( date( $this->settings['time_format'], strtotime( $mod->modified ) ) != $last_time ) {
+									$last_time = date( $this->settings['time_format'], strtotime( $mod->modified ) );
 									echo $last_time . '</td><td style="vertical-align:top;width:100%;">';
 								}
 								if ( ! empty( $postmeta_mods ) ) {
