@@ -141,17 +141,20 @@ class ModHistory {
 								echo '<td style="vertical-align:top;">' . date( 'n/j/y', strtotime( $mod->modified ) ) . '</td>';
 								echo '<td style="vertical-align:top;">';
 								if ( ! empty( $posts_mods ) ) {
+
+									// Optionally display the time if it's different than the last diff
+									if ( date( 'g:ia', strtotime( $mod->modified ) ) != $last_time ) {
+										$last_time = date( 'g:ia', strtotime( $mod->modified ) );
+										echo $last_time;
+									}
+									echo '</td><td style="vertical-align:top;width:100%;">';
+
+									// Display each post modification
 									foreach ( $posts_mods as $key => $postmod ) {
-										// Optionally display the time if it's different than the last diff
-										if ( date( 'g:ia', strtotime( $mod->modified ) ) != $last_time ) {
-											$last_time = date( 'g:ia', strtotime( $mod->modified ) );
-											echo $last_time . '</td><td style="vertical-align:top;width:100%;">';
-										} else {
-											echo '</td><td style="vertical-align:top;width:100%;">';
-										}
 										echo '<h4 style="margin:0;padding:0 6px;background:#eee;box-shadow:0 1px 3px 0px rgba(50, 50, 50, 0.25);cursor:pointer;position:relative;" class="togglenext">' . $key . '<div style="color:#aaa;position:absolute;right:0;" class="dashicons dashicons-arrow-down"></div></h4>';
 										echo '<div style="display:none;">' . wp_text_diff( $posts_modified['before'][ $key ], $postmod ) . '</div>';
 									}
+
 								} else if ( date( 'g:ia', strtotime( $mod->modified ) ) != $last_time ) {
 									$last_time = date( 'g:ia', strtotime( $mod->modified ) );
 									echo $last_time . '</td><td style="vertical-align:top;width:100%;">';
