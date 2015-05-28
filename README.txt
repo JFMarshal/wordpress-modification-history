@@ -18,6 +18,7 @@ Within the settings page, you are able to toggle off/on meta values in the event
 
 Possible future features:
 
+* Additional settings and display options (AJAX pagination, limit of results per page/metabox, etc.)
 * Comments and remarks on a particular revision
 * Email notifications when specific changesets are made
 * Stats

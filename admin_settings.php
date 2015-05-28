@@ -6,6 +6,7 @@ class AdminSettings extends ModHistory {
 	
 	private $post_types_blacklist = array( 'attachment', 'revision', 'nav_menu_item' );
 	private $post_types_enabled = array( 'post', 'page' );
+	private $time_format = 'g:ia';
 	private $settings = array();
 	private $options = array();
 
@@ -60,6 +61,14 @@ class AdminSettings extends ModHistory {
 			}
 			echo '</ul>';
 		}
+
+		// Localization settings
+		echo '<h3>' . __( 'Localization settings:', 'wp_mod_history' ) . '</h3>';
+		echo '<table style="padding-left:1em;">';
+			echo '<tr><td valign="top" style="padding-top:5px;"><label for="wp_mod_history_settings[time_format]">Time format:</label></td><td><input type="text" style="width:100%;" name="wp_mod_history_settings[time_format]" value="' . ( isset( $this->settings['time_format'] ) ? esc_attr( $this->settings['time_format'] ) : $this->time_format ) . '" style="margin-top:0"><br>(how to display the modification time - see <a href="http://php.net/manual/en/function.date.php" target="_blank">PHP <strong>date()</strong> format</a></td></tr>';
+		echo '</table>';
+
+		// Submit button
 		echo '<input type="submit" value="Save Settings" class="button button-primary">';
 		echo '</form>';
 	}
