@@ -11,7 +11,7 @@ class ModHistory {
 	private $post_types = array();
 
 	public function __construct() {
-		register_activation_hook( __FILE__, array( $this, 'test' ) );
+		register_activation_hook( __FILE__, array( $this, 'install' ) );
 		add_action( 'add_meta_boxes', array( $this, 'metaboxes' ) );
 		add_action( 'pre_post_update', array( $this, 'history_save' ) );
 		add_action( 'post_updated', array( $this, 'modifications_saved' ) );
