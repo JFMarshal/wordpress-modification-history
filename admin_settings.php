@@ -11,7 +11,7 @@ class AdminSettings extends ModHistory {
 	private $settings = array();
 	private $options = array();
 
-	function __construct( $args ) {
+	function __construct( $args = false ) {
 		// Run parent construct
 		parent::__construct( $args );
 
