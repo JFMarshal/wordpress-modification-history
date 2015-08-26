@@ -67,8 +67,6 @@ class ModHistory {
 	function metaboxes() {
 		if ( $this->post_types_check() ) {
 			add_meta_box( 'wp_modification_history', __( 'Modification History', 'wp-mod-history' ), array( $this, 'wp_modification_history' ), null );
-		} else {
-			wp_die( 'oh noes!' );
 		}
 	}
 
